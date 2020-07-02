@@ -76,9 +76,34 @@ def single_day(exams):
 # single_day(exams)
 
 
+#strategy: n students every k minutes
+def single_day_few_students_one_time(number_of_students_per_time, exams):
+    #results = [round(simulate([k*i for i in range(len(exams[0]))], exams)) for k in range(90)]
+
+    results = list()
+    for k in range(200):
+        scheduled_time = list()
+        for i in range(len(exams[0])//number_of_students_per_time + 3):
+            for j in range(number_of_students_per_time):
+                scheduled_time.append(k*i)
+
+        # scheduled_time = [k*i for i in range(len(exams[0]))]
+        results.append(simulate(scheduled_time, exams))
+
+    enumerated_results = [(i, result) for i, result in enumerate (results)]
+    print(enumerated_results, sep='\n')
+
+    annot_min(np.array([tup[0] for tup in enumerated_results]), np.array([tup[1] for tup in enumerated_results]))
+
+    plt.plot(results)
+    plt.show()
+
+single_day_few_students_one_time(3, exams)
+
+
+
 #na razie zakladamy, ze number_of_days dzieli 50
 def simulate_multiple_days(scheduled_time, number_of_days, exams):
-    print(scheduled_time)
     number_of_students_per_day = len(exams[0])//number_of_days
 
     sum_students = 0
@@ -101,8 +126,7 @@ def simulate_multiple_days(scheduled_time, number_of_days, exams):
             #mean_prof_waiting_time_per_day /= len(number_of_students_per_day)
             sum_students_delay += mean_students_delay_per_day
             sum_prof_waiting_time += mean_prof_waiting_time_per_day
-            print(mean_students_delay_per_day, " STUDENTS DEL")
-            print(mean_prof_waiting_time_per_day, " PROF DEL")
+
 
         sum_students_delay /= number_of_days
         sum_students += sum_students_delay
@@ -110,7 +134,6 @@ def simulate_multiple_days(scheduled_time, number_of_days, exams):
 
     sum_students /= len(exams)
     sum_prof /= len(exams)
-    print((sum_students + sum_prof)/2)
     return (sum_students + sum_prof)/2
 
 
@@ -133,6 +156,6 @@ def multiple_days(exams):
     plt.plot(results)
     plt.show()
 
-multiple_days(exams)
+# multiple_days(exams)
 
 
