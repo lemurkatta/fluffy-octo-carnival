@@ -1,5 +1,9 @@
+import copy
+import sys
+
 import numpy as np
 import matplotlib.pyplot as plt
+
 
 # set probabilities
 # probabilities = [0]*90
@@ -26,7 +30,7 @@ exams = [np.random.normal(30, 10, 50)
 
 #compute cost function
 def cost(students_delay, prof_waiting_time, number_of_students):
-    return (students_delay + number_of_students*prof_waiting_time)/(2*number_of_students)  # multiply prof by number of students (50)
+    return (students_delay + number_of_students*prof_waiting_time)/(2*number_of_students) # multiply prof by number of students (50)
 
 #compute delay and cost function given scheduled time
 def simulate(scheduled_time, exams):
@@ -61,6 +65,37 @@ def annot_min(x,y, ax=None):
               arrowprops=arrowprops, bbox=bbox_props, ha="right", va="top")
     ax.annotate(text, xy=(xmin, ymin), xytext=(0.50,0.96), **kw)
 
+    return xmin, ymin # zwroc k, dla ktorego jest najmniejszy delay
+
+def based_on_results_permutation(min_k, min_delay, exams, scheduled_time, is_multiple = False, number_of_days = 1):
+
+    most_optimal_all = list()
+
+    for exam in exams:
+        min_variation = abs(exam[0] - min_k)
+        index = 0
+        most_optimal = list()
+        while True:
+            min_variation = sys.maxsize
+            for i in range(len(exam)):
+                if abs(exam[i] - min_k) < min_variation:
+                    min_variation = abs(exam[i] - min_k)
+                    index = i
+            if exam[index] == sys.maxsize:
+                break
+            most_optimal.append(exam[index])
+            exam[index] = sys.maxsize
+
+        most_optimal_all.append(most_optimal)
+
+    if is_multiple:
+        current_result = simulate_multiple_days(scheduled_time, number_of_days, most_optimal_all)
+    else:
+        current_result = simulate(scheduled_time, most_optimal_all)
+
+    print("K: ", min_k)
+    print("OPTIMAL ", current_result, " OUR SIMULATED RESULT ", min_delay)
+
 def single_day(exams):
     #strategy number one: k minutes each
     results = [round(simulate([k*i for i in range(len(exams[0]))], exams)) for k in range(90)]
@@ -68,12 +103,18 @@ def single_day(exams):
     enumerated_results = [(i, result) for i, result in enumerate (results)]
     print(enumerated_results, sep='\n')
 
-    annot_min(np.array([tup[0] for tup in enumerated_results]), np.array([tup[1] for tup in enumerated_results]))
+    min_k, min_delay = annot_min(np.array([tup[0] for tup in enumerated_results]), np.array([tup[1] for tup in enumerated_results]))
 
     plt.plot(results)
     plt.show()
 
-# single_day(exams)
+    based_on_results_permutation(min_k, min_delay, copy.deepcopy(exams), [min_k*i for i in range(len(exams[0]))])
+
+    return min_k, min_delay
+
+print("SINGLE DAY")
+single_day(exams)
+print()
 
 
 #strategy: n students every k minutes
@@ -93,12 +134,23 @@ def single_day_few_students_one_time(number_of_students_per_time, exams):
     enumerated_results = [(i, result) for i, result in enumerate (results)]
     print(enumerated_results, sep='\n')
 
-    annot_min(np.array([tup[0] for tup in enumerated_results]), np.array([tup[1] for tup in enumerated_results]))
+    min_k, min_delay = annot_min(np.array([tup[0] for tup in enumerated_results]), np.array([tup[1] for tup in enumerated_results]))
 
     plt.plot(results)
     plt.show()
 
+    best_scheduled = list()
+    for i in range(len(exams[0]) // number_of_students_per_time + 3):
+        for j in range(number_of_students_per_time):
+            best_scheduled.append(min_k * i)
+
+    based_on_results_permutation(min_k//number_of_students_per_time, min_delay, copy.deepcopy(exams), best_scheduled)
+
+    return min_k, min_delay
+
+print("SINGLE DAY, FEW ONE TIME")
 single_day_few_students_one_time(3, exams)
+print()
 
 
 
@@ -151,11 +203,14 @@ def multiple_days(exams):
     enumerated_results = [(i, result) for i, result in enumerate (results)]
     print(enumerated_results, sep='\n')
 
-    annot_min(np.array([tup[0] for tup in enumerated_results]), np.array([tup[1] for tup in enumerated_results]))
+    min_k, min_delay = annot_min(np.array([tup[0] for tup in enumerated_results]), np.array([tup[1] for tup in enumerated_results]))
 
     plt.plot(results)
     plt.show()
 
-# multiple_days(exams)
+    based_on_results_permutation(min_k, min_delay, exams[:], [min_k*i for i in range(number_of_students_per_day)], True, number_of_days)
 
+    return min_k, min_delay
 
+print("MULTIPLE DAYS")
+multiple_days(exams)
