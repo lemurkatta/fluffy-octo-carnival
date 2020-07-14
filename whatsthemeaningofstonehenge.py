@@ -67,7 +67,7 @@ def annot_min(x,y, ax=None):
 
     return xmin, ymin # zwroc k, dla ktorego jest najmniejszy delay
 
-def based_on_results_permutation(min_k, min_delay, exams, scheduled_time, is_multiple = False, number_of_days = 1):
+def absolute_value_heuristic(min_k, min_delay, exams, scheduled_time, is_multiple = False, number_of_days = 1):
 
     most_optimal_all = list()
 
@@ -108,7 +108,7 @@ def single_day(exams):
     plt.plot(results)
     plt.show()
 
-    based_on_results_permutation(min_k, min_delay, copy.deepcopy(exams), [min_k*i for i in range(len(exams[0]))])
+    absolute_value_heuristic(min_k, min_delay, copy.deepcopy(exams), [min_k * i for i in range(len(exams[0]))])
 
     return min_k, min_delay
 
@@ -118,7 +118,7 @@ print()
 
 
 #strategy: n students every k minutes
-def single_day_few_students_one_time(number_of_students_per_time, exams):
+def few_at_once(number_of_students_per_time, exams):
     #results = [round(simulate([k*i for i in range(len(exams[0]))], exams)) for k in range(90)]
 
     results = list()
@@ -144,12 +144,12 @@ def single_day_few_students_one_time(number_of_students_per_time, exams):
         for j in range(number_of_students_per_time):
             best_scheduled.append(min_k * i)
 
-    based_on_results_permutation(min_k//number_of_students_per_time, min_delay, copy.deepcopy(exams), best_scheduled)
+    absolute_value_heuristic(min_k // number_of_students_per_time, min_delay, copy.deepcopy(exams), best_scheduled)
 
     return min_k, min_delay
 
 print("SINGLE DAY, FEW ONE TIME")
-single_day_few_students_one_time(3, exams)
+few_at_once(3, exams)
 print()
 
 
@@ -208,7 +208,7 @@ def multiple_days(exams):
     plt.plot(results)
     plt.show()
 
-    based_on_results_permutation(min_k, min_delay, exams[:], [min_k*i for i in range(number_of_students_per_day)], True, number_of_days)
+    absolute_value_heuristic(min_k, min_delay, exams[:], [min_k * i for i in range(number_of_students_per_day)], True, number_of_days)
 
     return min_k, min_delay
 
